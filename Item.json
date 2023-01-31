@@ -1,1 +1,57 @@
-[{"id":1, " name": "licuadora","price": "$9000","category": "PAE"},{"id":2, " name": "Televisor","price": "$34000","category": "Imagen"},{"id":3, " name": "Monitor","price": "$24000","category": "Imagen"},{"id":4, " name": "Heladera","price": "$134000","category": "Refrigeracion"},{"id":5, " name": "Plancha","price": "$4000","category": "PAE"}]
+[
+  {
+    "id": 1,
+    "title": "licuadora",
+    "price": "$9000",
+    "description": "prueba", 
+    "code":"abc",
+    "category": "PAE",
+    "status": true,
+    "stock": 10,
+    "thumbnail": "https://picsum.photos/200/300?random=1"
+  },
+  {
+    "id": 2,
+    "title": "Televisor",
+    "price": "$34000",
+    "description": "prueba",
+    "code":"rty",
+    "category": "Imagen",
+    "status": true,
+    "stock": 10,
+    "thumbnail": "https://picsum.photos/200/300?random=2"
+  },
+  {
+    "id": 3,
+    "title": "Monitor",
+    "price": "$24000",
+    "description": "prueba",
+    "code":"asd",
+    "category": "Imagen",
+    "status": true,
+    "stock": 10,
+    "thumbnail": "https://picsum.photos/200/300?random=3"
+  },
+  {
+    "id": 4,
+    "title": "Heladera",
+    "price": "$134000",
+    "description": "prueba",
+    "code":"qwe",
+    "category": "Refrigeracion",
+    "status": true,
+    "stock": 10,
+    "thumbnail": "https://picsum.photos/200/300?random=4"
+  },
+  {
+    "id": 5,
+    "title": "Plancha",
+    "price": "$4000",
+    "description": "prueba",
+    "code":"zxc",
+    "category": "PAE",
+    "status": true,
+    "stock": 10,
+    "thumbnail": "https://picsum.photos/200/300?random=5"
+  }
+]

@@ -1,83 +1,90 @@
-const fs = "fs";
-
-class Product {
-  constructor(title, description, price, thumbnail, code, stock) {
-    this.title = title;
-    this.description = description;
-    this.price = price;
-    this.thumbnail = thumbnail;
-    this.code = code;
-    this.stock = stock;
-  }
-} 
+import fs from "fs";
 
 export default class ProductManager {
-  constructor(path) {
-    this.path = [];
-  }
-
-  async addProdruct(product) {
-    try {
-      const productsFile = await this.getProducts();
-      productsFile.push(product);
-      await fs.promises.writeFile(path, JSON.stringify(productsFile));
-    } catch (error) {
-      console.log(error);
+    constructor() {
+        this.path = "./item.json";
+        this.products = [];
     }
-  }
 
-  async getProducts() {
-    try {
-      if (fs.existsSync(this.path)) {
-        const products = await fs.promises.readFile(this.path, "utf-8");
-        const productsJS = JSON.parse(products);
-        return productsJS;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      console.log(error);
+    async addProduct(title, description, code, price, status = true, stock, category, thumbnail) {
+        const product = {
+            id: this.#idGenerator(),
+            title,
+            description,
+            code,
+            price,
+            status,
+            stock,
+            category,
+            thumbnail: [],
+        }
+
+        const checkCode = this.#codeChecker(code);
+        if(checkCode) {
+            console.log("Código repetido")
+        } 
+        else if(!title || !description || !code || !price || !stock || !status || !category) {
+            console.log("Campo/s no rellenado/s")
+        } else { 
+            product.thumbnail.push(thumbnail);
+            this.products.push(product)
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products));
+            console.log("Producto agregado correctamente")  
+        }
     }
-    return this.path;
-  }
 
-  deletFileProducts(parameter) {
-    if (parameter === "si") {
-      fs.unlinkSync(path);
+    async getProducts() {
+        if(fs.existsSync(this.path)) {
+            const readInfo = await fs.promises.readFile(this.path, "utf-8");
+            const savedInfo = JSON.parse(readInfo);
+            return savedInfo;
+        } else {
+            console.log("Archivo no encontrado")
+            return this.products;
+        }   
     }
-  }
 
-  getProducts() {
-    return this.path;
-  }
-
-  getAddId = () => {
-    const count = this.path.length;
-    const addtId = count > 0 ? this.path[count - 1].id + 1 : 1;
-    return addtId;
-  };
-
-  getProductById(id) {
-    if (this.path.find((p) => p.id === id)) {
-      return this.path.find((p) => p.id === id);
-    } else {
-      return "Not found";
+    async getProductById(id) {
+        const savedInfoId = await this.getProducts();
+        const productId = savedInfoId.find(elem => elem.id === id)
+        if(productId !== undefined) {
+            return productId;
+        } else (console.log("Id no encontrado"))
     }
-  }
 
-  addProduct(product) {
-    if (!this.path.find((p) => p.code === product.code)) {
-      product["id"] = this.getAddId();
-      this.products.push(product);
+    async updateProduct(id, field, value) {
+        const prdcToUpdate = await this.getProductById(id);
+        if(prdcToUpdate) {
+            const savedPrdct = await this.getProducts();
+            const indexId = savedPrdct.findIndex((element) => element.id === id)
+            savedPrdct[indexId][field] = value;
+            await fs.promises.writeFile(this.path, JSON.stringify(savedPrdct));
+            console.log("Archivo actualizado correctamente")
+        } else {console.log("Inserte un ID válido")}
     }
-  }
 
-  updateProduct(id, title) {
-    const actualizar = this.path.find((prop) => prop.id === id);
-    return (actualizar.title = title);
-  }
+    async deleteProduct(id) {
+        const prdcToDelete = await this.getProductById(id);
+        if(prdcToDelete) {
+            const savedPrdct = await this.getProducts();
+            const indexId = savedPrdct.findIndex((element) => element.id === id)
+            console.log(`El archivo se ha eliminado correctamente`)
+            savedPrdct.splice(indexId,1)
+            await fs.promises.writeFile(this.path, JSON.stringify(savedPrdct));
+        } else {
+            console.log("Archivo no encontrado")
+        }
+    }
 
-  deleteProduct(id) {
-    return this.path.filter((elemente) => elemente.id !== id);
-  }
+    #idGenerator() {
+        let id = 1;
+        if(this.products.length !== 0) {
+            id = this.products[this.products.length-1].id + 1;
+        } return id;
+    }
+
+    #codeChecker(code) {
+        return this.products.find(prod => prod.code === code)
+    }
 }
+
