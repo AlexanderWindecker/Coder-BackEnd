@@ -1,27 +1,39 @@
-import  express  from "express";
+import express from "express";
+import productsRouter from "./routes/products.router.js";
+import cartsRouter from "./routes/carts.router.js";
+import viewsRouter from "./routes/views.router.js";
+import handlebars from "express-handlebars";
+import { Server } from "socket.io";
+import { __dirname } from "./utils.js";
 
-import productosRouter from "/routes/products.router.js "
-import cartsRouter from "/routes/carts.router.js "
+const app = express();
+const httpServer = app.listen(8080, () => console.log("Escuchando al puerto 8080"));
+export const socketServer = new Server(httpServer);
 
-const app = Express()
+app.use(express.json());
+app.use(express.urlencoded({extended:true}));
+app.use(express.static(__dirname + "/public"));
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
+app.use("/", viewsRouter);
 
-import {dirname} from "path"
-import { fileURLToPath } from "url";
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
+app.set("views", __dirname + "/views");
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const arrayPrdct = [];
 
-app.use(express.json())
-app.use(express.urlencoded({extends:true}))
-app.use(express.static(__dirname+"/public"))
+socketServer.on("connection", (socket) => {
+    console.log(`Cliente Conectado: ${socket.id}`)
+    socketServer.emit("list", arrayPrdct)
 
-app.use("api/productos",productosRouter) 
+    socket.on("disconnect", () => {
+        console.log("Cliente Desconectado")
+    })
 
+    socket.on("object", newPrdc => {
+        arrayPrdct.push(newPrdc)
+        socketServer.emit("list2", arrayPrdct)
+    })
+});
 
-app.use("api/carts",cartsRouter)
-
-
-
-
-app.listen (8080, () =>{
-    console.log("escuchando el puerto 8080");
-} )
