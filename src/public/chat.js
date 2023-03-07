@@ -8,49 +8,67 @@ const chatParagraph = document.getElementById("chat");
 
 let user = null;
 
-if(!user) {
-    Swal.fire({
-        title: 'Bienvenido',
-        text: 'Ingresa tu Nombre',
-        input: 'text',
-        inputValidator: (value) => {
-          if (!value) {
-            return 'Necesitas ingresar un nombre'
-          }
-        },
-      }).then((username) => {
-        user = username.value
-        userName.innerText = user
-        socketClient.emit('newUser', user)
-      })
+if (!user) {
+  Swal.fire({
+    title: "Bienvenido",
+    text: "Ingresa tu Nombre",
+    input: "text",
+    inputValidator: (value) => {
+      if (!value) {
+        return "Necesitas ingresar un nombre";
+      }
+    },
+  }).then((username) => {
+    user = username.value;
+    userName.innerText = user;
+    socketClient.emit("newUser", user);
+  });
 }
 
 formChat.onsubmit = (e) => {
-    e.preventDefault()
+  e.preventDefault();
 
-    const info = {
-        name: mailChat.value,
-        message: messageChat.value,
-    }
+  const info = {
+    name: mailChat.value,
+    message: messageChat.value,
+  };
 
-    socketClient.emit("message", info)
-    messageChat.value = ""
-}
+  const config = {
+    method: "POST",
+    body: JSON.stringify(info),
+    headers: {
+      "Content-Type": "application/json;charset=UTF-8",
+    },
+  };
 
-socketClient.on("chat", infoMessage => {
-    const chatRender = infoMessage.map(elem => {
-        return `<p><strong>${elem.name}: </strong>${elem.message}</p>`
-    }).join(" ")
-    chatParagraph.innerHTML = chatRender;
-})
+  fetch("/api/messages", config)
+    .then((response) => {
+      if (response.ok) console.log(response.json());
+      else throw new Error(response.status);
+    })
+    .catch((err) => {
+      console.log("Error", err);
+    });
 
-socketClient.on("broadcast", user => {
-    Toastify({
-        text: `${user} ingresó al chat`,
-        duration: 5000,
-        position: 'right',
-        style: {
-            background: "linear-gradient(to right, #00b09b, #96c93d)",
-          }
-    }).showToast();
-})
+  socketClient.emit("message", info);
+  messageChat.value = "";
+};
+socketClient.on("chat", (infoMessage) => {
+  const chatRender = infoMessage
+    .map((elem) => {
+      return `<p><strong>${elem.name}: </strong>${elem.message}</p>`;
+    })
+    .join(" ");
+  chatParagraph.innerHTML = chatRender;
+});
+
+socketClient.on("active", (user) => {
+  Toastify({
+    text: `${user} ingresó al chat`,
+    duration: 5000,
+    position: "right",
+    style: {
+      background: "linear-gradient(to right, #00b09b, #96c93d)",
+    },
+  }).showToast();
+});

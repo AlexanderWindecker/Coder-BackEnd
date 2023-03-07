@@ -2,11 +2,12 @@ import express from "express";
 import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import viewsRouter from "./routes/views.router.js";
-import messagesRouter from "./routes/messages.router.js"
+import messagesRouter from "./routes/messages.router.js";
 import handlebars from "express-handlebars";
 import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
 import "./dao/dbConfig.js";
+import { productManager } from "./routes/products.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -32,7 +33,8 @@ const infoMessage = [];
 
 socketServer.on("connection", (socket) => {
   console.log(`Cliente Conectado: ${socket.id}`);
-  socketServer.emit("list", arrayPrdct);
+  const prdcs = productManager.getProducts();
+  socketServer.emit("list", prdcs);
 
   socket.on("disconnect", () => {
     console.log("Cliente Desconectado");
@@ -41,6 +43,9 @@ socketServer.on("connection", (socket) => {
   socket.on("object", (newPrdc) => {
     arrayPrdct.push(newPrdc);
     socketServer.emit("list2", arrayPrdct);
+  });
+  socket.on("newUser", (user) => {
+    socket.emit("active", user);
   });
   socket.on("message", (info) => {
     infoMessage.push(info);

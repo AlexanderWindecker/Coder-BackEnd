@@ -1,24 +1,53 @@
 import { Router } from "express";
+import { productsModel } from "../dao/models/products.model.js";
 import ProductManager from "../dao/mongoManagers/ProductManager.js";
 // import ProductManager from "../dao/fileManagers/ProductManager.js";
 
 const router = Router();
-const productManager = new ProductManager("../item.json");
+export const productManager = new ProductManager("../item.json");
 
 router.get("/", async (req, res) => {
-  const products = await productManager.getProducts();
-  const { limit } = req.query;
-  const limitedPrdcs = products.slice(0, limit);
-  if (limit) {
-    res.json({ products: limitedPrdcs });
-  } else {
-    res.json(products);
-  }
+  const { limit = 10, page = 1, sort, query } = req.query;
+  const products = await productsModel.paginate(
+    { query },
+    { limit, page, sort: { price: sort } }
+  );
+  const status = products.docs ? "success" : "error";
+  const prevLink = products.hasPrevPage
+    ? `http://localhost:8080/api/products?page=${products.prevPage}`
+    : null;
+  const nextLink = products.hasNextPage
+    ? `http://localhost:8080/api/products?page=${products.nextPage}`
+    : null;
+  res.json({
+    results: {
+      status,
+      payload: products.docs,
+      totalPages: products.totalPages,
+      prevPage: products.prevPage,
+      nextPage: products.nextPage,
+      page: products.page,
+      hasPrevPage: products.hasPrevPage,
+      hasNextPage: products.hasNextPage,
+      prevLink,
+      nextLink,
+    },
+  });
+});
+
+router.get("/aggregation/:category", async (req, res) => {
+  const { category } = req.params;
+  const { sort } = req.query;
+  const categories = await productManager.aggregationFunc(
+    category,
+    parseInt(sort)
+  );
+  res.json({ categories });
 });
 
 router.get("/:pid", async (req, res) => {
   const { pid } = req.params;
-  const idPrdct = await productManager.getProductById(parseInt(pid));
+  const idPrdct = await productManager.getProductById(pid);
   res.json(idPrdct);
 });
 
@@ -34,7 +63,7 @@ router.put("/:pid", async (req, res) => {
   const field = Object.keys(objValue);
   const value = Object.values(objValue);
   const updatePrdc = await productManager.updateProduct(
-    parseInt(pid),
+    pid,
     ...field,
     ...value
   );
@@ -43,7 +72,7 @@ router.put("/:pid", async (req, res) => {
 
 router.delete("/:pid", async (req, res) => {
   const { pid } = req.params;
-  const deletePrdc = await productManager.deleteProduct(parseInt(pid));
+  const deletePrdc = await productManager.deleteProduct(pid);
   res.json(deletePrdc);
 });
 
