@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { productsModel } from "../dao/models/products.model.js";
 import ProductManager from "../dao/mongoManagers/ProductManager.js";
-// import ProductManager from "../dao/fileManagers/ProductManager.js";
 
 const router = Router();
-export const productManager = new ProductManager("../item.json");
+export const productManager = new ProductManager("../");
 
 router.get("/", async (req, res) => {
   const { limit = 10, page = 1, sort, query } = req.query;
@@ -35,7 +34,7 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.get("/aggregation/:category", async (req, res) => {
+router.get("/aggregation/category/:category", async (req, res) => {
   const { category } = req.params;
   const { sort } = req.query;
   const categories = await productManager.aggregationFunc(
@@ -43,6 +42,16 @@ router.get("/aggregation/:category", async (req, res) => {
     parseInt(sort)
   );
   res.json({ categories });
+});
+
+router.get("/aggregation/stock/:stock", async (req, res) => {
+  const { stock } = req.params;
+  const { sort } = req.query;
+  const stocks = await productManager.aggregationFunc2(
+    parseInt(stock),
+    parseInt(sort)
+  );
+  res.json({ stocks });
 });
 
 router.get("/:pid", async (req, res) => {

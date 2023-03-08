@@ -8,13 +8,12 @@ import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
 import "./dao/dbConfig.js";
 import { productManager } from "./routes/products.router.js";
+import { cartManager } from "./routes/carts.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const httpServer = app.listen(PORT, () =>
-  console.log(`Escuchando al puerto ${PORT} `)
-);
-export const socketServer = new Server(httpServer);
+const httpServer = app.listen(PORT, () =>  console.log(`Escuchando al puerto ${PORT} `));
+const socketServer = new Server(httpServer);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -33,10 +32,8 @@ const infoMessage = [];
 
 socketServer.on("connection", (socket) => {
   console.log(`Cliente Conectado: ${socket.id}`);
-  const prdcs = productManager.getProducts();
-  socketServer.emit("list", prdcs);
 
-  socket.on("disconnect", () => {
+    socket.on("disconnect", () => {
     console.log("Cliente Desconectado");
   });
 
@@ -44,11 +41,26 @@ socketServer.on("connection", (socket) => {
     arrayPrdct.push(newPrdc);
     socketServer.emit("list2", arrayPrdct);
   });
+
   socket.on("newUser", (user) => {
     socket.emit("active", user);
   });
+
   socket.on("message", (info) => {
     infoMessage.push(info);
     socketServer.emit("chat", infoMessage);
+  });
+  
+  socket.on("addCart", async () => {
+    const addC = await cartManager.addCart();
+    socketServer.emit("cart", addC.id);
+    const prdcs = await productManager.getProducts();
+    socketServer.emit("list", prdcs);
+  });
+
+  socket.on("addPrdc", async (cart, button) => {
+    console.log(cart, button);
+    const addPrdc = await cartManager.addToCart(cart, button);
+    socketServer.emit("addNow", addPrdc);
   });
 });

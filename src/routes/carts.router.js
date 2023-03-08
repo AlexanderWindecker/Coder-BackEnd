@@ -1,11 +1,9 @@
 import { Router } from "express";
 import CartManager from "../dao/mongoManagers/CartManager.js";
 import ProductManager from "../dao/mongoManagers/ProductManager.js";
-//import CartManager from "../dao/fileManagers/CartManager.js";
-//import ProductManager from "../dao/fileManagers/ProductManager.js"
 
 const router = Router();
-const cartManager = new CartManager("../carts.json");
+export const cartManager = new CartManager("../carts.json");
 const productManager = new ProductManager("../products.json");
 
 router.post("/", async (req, res) => {
@@ -13,13 +11,15 @@ router.post("/", async (req, res) => {
   const generateCart = await cartManager.addCart(cart);
   res.json(generateCart);
 });
+
 router.get("/", async (req, res) => {
   const carts = await cartManager.getCarts();
   res.json(carts);
 });
+
 router.get("/:cid", async (req, res) => {
   const { cid } = req.params;
-  const idCart = await cartManager.getCartById(parseInt(cid));
+  const idCart = await cartManager.getCartById(cid);
   if (!idCart) {
     res.json({ message: "ID no encontrada" });
   } else {
@@ -30,18 +30,52 @@ router.get("/:cid", async (req, res) => {
 router.post("/:cid/products/:pid", async (req, res) => {
   const { cid, pid } = req.params;
   const allIds = await productManager.getProducts();
-  const prdtId = allIds.find((elm) => elm.id === parseInt(pid));
+  const prdtId = allIds.find((elm) => elm.id === pid);
   if (prdtId) {
-    const response = await cartManager.addToCart(parseInt(cid), parseInt(pid));
+    const response = await cartManager.addToCart(cid, pid);
     res.json(response);
   } else {
     res.json({ message: "Id no encontrada" });
   }
 });
+
 router.delete("/:cid/products/:pid", async (req, res) => {
   const { cid, pid } = req.params;
-  const cartDel = await cartManager.deletePrdcCart(cid, pid);
-  res.json(cartDel);
+  const allIds = await productManager.getProducts();
+  const prdtId = allIds.find((elm) => elm.id === pid);
+  if (prdtId) {
+    const delOnePrdc = await cartManager.deletePrdcCart(cid, pid);
+    res.json({ message: "Producto eliminado exitosamente", delOnePrdc });
+  } else {
+    res.json({ message: "Id no encontrada" });
+  }
+});
+
+router.delete("/:cid", async (req, res) => {
+  const { cid } = req.params;
+  const delPrdcs = await cartManager.deleteAllPrdcts(cid);
+  res.json({ message: "Productos eliminados exitosamente", delPrdcs });
+});
+
+router.put("/:cid/products/:pid", async (req, res) => {
+  const { cid, pid } = req.params;
+  const objValue = req.body;
+  const allIds = await productManager.getProducts();
+  const prdtId = allIds.find((elm) => elm.id === pid);
+  if (prdtId) {
+    const qnt = Object.values(objValue);
+    const updOnePrdc = await cartManager.updatePrdctCart(cid, pid, ...qnt);
+    res.json({ message: "Producto actualizado exitosamente", updOnePrdc });
+  } else {
+    res.json({ message: "Id no encontrada" });
+  }
+});
+
+router.put("/:cid", async (req, res) => {
+  const { cid } = req.params;
+  const objValue = req.body;
+  const updCart = await cartManager.updateCart(cid, objValue);
+  res.json({ message: "Productos agregados exitosamente", updCart });
 });
 
 export default router;
