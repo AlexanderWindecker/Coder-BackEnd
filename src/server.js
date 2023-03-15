@@ -6,7 +6,7 @@ import usersRouter from "./routes/users.router.js";
 import viewsRouter from "./routes/views.router.js";
 import handlebars from "express-handlebars";
 import session from "express-session";
-//import cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import MongoStore from "connect-mongo";
 import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
@@ -43,21 +43,27 @@ app.use("/api/message", messagesRouter);
 app.use("/api/users", usersRouter);
 app.use("/", viewsRouter);
 
-//app.use(cookieParser());
+app.use(cookieParser());
 
 app.engine("handlebars", handlebars.engine());
 app.set("view engine", "handlebars");
 app.set("views", __dirname + "/views");
 
 const arrayPrdct = [];
-const arrayPrdctCart = [];
 const infoMessage = [];
 
-socketServer.on("connection", (socket) => {
+socketServer.on("connection", async (socket) => {
   console.log(`Cliente Conectado: ${socket.id}`);
+  const prdcs = await productManager.getProducts();
+  socketServer.emit("list", prdcs);
 
   socket.on("disconnect", () => {
     console.log("Cliente Desconectado");
+  });
+
+  socket.on("userData", (data) => {
+    console.log(data);
+    socketServer.emit("data", data);
   });
 
   socket.on("object", (newPrdc) => {
