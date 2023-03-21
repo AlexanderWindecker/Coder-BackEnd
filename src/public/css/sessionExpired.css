@@ -1,0 +1,16 @@
+html {
+    height: 100%;
+}
+
+
+
+h1 {
+    text-align: center;
+    font-size: 5rem;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    letter-spacing: 2rem;
+    text-shadow: -6px 3px 2px rgba(0,0,0,0.24);
+    color: white;
+    margin: 0 0 3rem 0;
+    padding-left: 10rem;
+}

@@ -3,7 +3,7 @@
         <h1>CoderHouse</h1>
     </div>
     <div class="divLog">
-        <button onclick="location.href='/logout'" class="btnLog">Desconectarse</button>
+        <button id="logoutBtn" class="btnLog">Desconectarse</button>
     </div>
 </div>
 
@@ -14,5 +14,10 @@
     <a href="http://localhost:8080/chat"><button class="btn">Chat CoderHouse</button></a>
 </nav>
 
+<div id="divUsers">
+    <p>Bienvenido: <span>{{session.userName}}</span></p>
+    {{!-- <p>Rol: <span>{{session.userRol}}</span></p> --}}
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
-<script src="indexAdmin.js"></script>
+<script src="index.js"></script>

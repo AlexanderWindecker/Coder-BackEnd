@@ -8,9 +8,11 @@ import handlebars from "express-handlebars";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import MongoStore from "connect-mongo";
+import passport from "passport";
 import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
 import "./dao/dbConfig.js";
+import "./passport/passportStrategies.js";
 import { productManager } from "./routes/products.router.js";
 import { cartManager } from "./routes/carts.router.js";
 
@@ -37,9 +39,11 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
-app.use("/api/message", messagesRouter);
+app.use("/api/messages", messagesRouter);
 app.use("/api/users", usersRouter);
 app.use("/", viewsRouter);
 
@@ -80,16 +84,19 @@ socketServer.on("connection", async (socket) => {
     socketServer.emit("chat", infoMessage);
   });
 
-  socket.on("addCart", async () => {
-    const addC = await cartManager.addCart();
-    socketServer.emit("cart", addC.id);
-    const prdcs = await productManager.getProducts();
-    socketServer.emit("list", prdcs);
+  socket.on("addCart", async (allIds) => {
+    if (allIds !== undefined) {
+      const cartOne = await cartManager.getCartById(allIds);
+      socketServer.emit("cartCreated", cartOne);
+    } else {
+      const addC = await cartManager.addCart();
+      socketServer.emit("cart", addC.id);
+      const prdcs = await productManager.getProducts();
+      socketServer.emit("list", prdcs);
+    }
   });
 
   socket.on("addPrdc", async (cart, button) => {
-    const addPrdc = await cartManager.addToCart(cart, button);
-    arrayPrdctCart.push(addPrdc);
-    socketServer.emit("addNow", arrayPrdctCart);
+    const prdcts = await cartManager.addToCart(cart, button);
   });
 });

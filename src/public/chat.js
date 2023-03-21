@@ -53,6 +53,7 @@ formChat.onsubmit = (e) => {
   socketClient.emit("message", info);
   messageChat.value = "";
 };
+
 socketClient.on("chat", (infoMessage) => {
   const chatRender = infoMessage
     .map((elem) => {

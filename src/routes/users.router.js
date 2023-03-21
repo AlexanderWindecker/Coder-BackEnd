@@ -1,46 +1,55 @@
 import { Router } from "express";
+import passport from "passport";
 import UserManager from "../dao/mongoManagers/UserManager.js";
 
 const router = Router();
 const userManager = new UserManager();
 
-router.post("/register", async (req, res) => {
-  const user = req.body;
-  const newUser = await userManager.createUser(user);
-  if (newUser) {
-    res.redirect("/");
-  } else {
-    res.redirect("/registerFail");
-  }
-});
-
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await userManager.loginUser(req.body);
-  if (user) {
-    req.session.email = email;
-    req.session.password = password;
-    req.session.userName = user.userName;
-    req.session.userRol = user.userRol;
-    if (user.userRol === "Admin") {
-      res.redirect("/indexAdmin");
+router.post("/register", async (req,res) => {
+    const user = req.body;
+    const newUser = await userManager.createUser(user);
+    if(newUser) {
+        res.redirect("/")
     } else {
-      res.redirect("/index");
+        res.redirect("/registerFail")
     }
-  } else {
-    res.redirect("/loginFail");
-  }
-});
+})
 
-router.get("/logout", async (req, res) => {
-  req.session.destroy((error) => {
-    if (error) {
-      console.log(error);
-      res.send({ status: "Logout Error", body: error });
+router.post("/login", async (req,res) => {
+    const { email, password } = req.body;
+    const user = await userManager.loginUser(req.body);
+    if(user) {
+        req.session.email = email
+        req.session.password = password
+        req.session.userName = user.userName
+        req.session.userRol = user.userRol
+        if(user.userRol === "Admin") {
+            res.redirect("/indexAdmin")
+        } else {
+            res.redirect("/index")
+        }
     } else {
-      console.log("Sesión Eliminada con Éxito");
+        res.redirect("/loginFail")
     }
-  });
-});
+})
+
+router.get("/logout", async (req,res) => {
+    req.session.destroy((error) => {
+        if(error) {
+            console.log(error)
+            res.send({status: "Logout Error", body: error})
+        } else {
+            console.log("Sesión Eliminada con Éxito")
+        }
+    })
+})
+
+router.get("/registerGithub", passport.authenticate("github", { scope: ["user:email"] }))
+
+router.get("/github", passport.authenticate("github"), (req, res) => {
+    console.log(req.session.passport.user)
+    req.session.email = req.session.email
+    res.redirect("/index")
+})
 
 export default router;
