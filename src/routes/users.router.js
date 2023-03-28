@@ -23,6 +23,7 @@ router.post("/login", async (req,res) => {
         req.session.password = password
         req.session.userName = user.userName
         req.session.userRol = user.userRol
+        req.session.userCart = user.userCart
         if(user.userRol === "Admin") {
             res.redirect("/indexAdmin")
         } else {
@@ -31,6 +32,12 @@ router.post("/login", async (req,res) => {
     } else {
         res.redirect("/loginFail")
     }
+})
+
+router.get("/", async(req,res)=>{
+    const email = req.session.email;
+    const users = await userManager.getUserByEmail(email)
+    res.json(users)
 })
 
 router.get("/logout", async (req,res) => {
@@ -47,8 +54,9 @@ router.get("/logout", async (req,res) => {
 router.get("/registerGithub", passport.authenticate("github", { scope: ["user:email"] }))
 
 router.get("/github", passport.authenticate("github"), (req, res) => {
-    console.log(req.session.passport.user)
-    req.session.email = req.session.email
+    req.session.userName = req.user.first_name
+    req.session.email = req.user.email
+    req.session.userRol = "Usuario"    
     res.redirect("/index")
 })
 

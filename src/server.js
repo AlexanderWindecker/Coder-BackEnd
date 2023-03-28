@@ -18,27 +18,21 @@ import { cartManager } from "./routes/carts.router.js";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const httpServer = app.listen(PORT, () =>
-  console.log(`Escuchando al puerto ${PORT} `)
-);
+const httpServer = app.listen(PORT, () =>  console.log(`Escuchando al puerto ${PORT} `));
 const socketServer = new Server(httpServer);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(__dirname + "/public"));
-//File Session
-app.use(
-  session({
+app.use(session({
     store: MongoStore.create({
-      mongoUrl:
-        "mongodb+srv://Alex:Coderhouse@cluster0.itypvvb.mongodb.net/?retryWrites=true&w=majority",
+      mongoUrl:"mongodb+srv://Alex:Coderhouse@cluster0.itypvvb.mongodb.net/?retryWrites=true&w=majority",
       mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
     }),
     secret: "sessionKey",
     resave: false,
     saveUninitialized: true,
-  })
-);
+  }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api/products", productsRouter);
@@ -82,18 +76,6 @@ socketServer.on("connection", async (socket) => {
   socket.on("message", (info) => {
     infoMessage.push(info);
     socketServer.emit("chat", infoMessage);
-  });
-
-  socket.on("addCart", async (allIds) => {
-    if (allIds !== undefined) {
-      const cartOne = await cartManager.getCartById(allIds);
-      socketServer.emit("cartCreated", cartOne);
-    } else {
-      const addC = await cartManager.addCart();
-      socketServer.emit("cart", addC.id);
-      const prdcs = await productManager.getProducts();
-      socketServer.emit("list", prdcs);
-    }
   });
 
   socket.on("addPrdc", async (cart, button) => {

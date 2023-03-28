@@ -33,13 +33,14 @@ export default class CartManager {
       const idCart = await cartsModel.findById(cid);
       if (idCart) {
         const idPrdc = idCart.products.findIndex(
-          (element) => element.product === pid
+          (element) => element.product == pid
         );
         if (idPrdc !== -1) {
           const updQty = cartsModel.updateOne(
-            { _id: cid },
-            { $inc: { "products.0.quantity": 1 } }
+            { _id: cid, "products.product": pid },
+            { $inc: { "products.$.quantity": 1 } }
           );
+          console.log("Cantidad aumentada");
           return updQty;
         } else {
           const pushPrdc = cartsModel.updateOne(
@@ -53,6 +54,7 @@ export default class CartManager {
       console.log("Carrito no encontrado", error);
     }
   }
+
   async deletePrdcCart(cid, pid) {
     try {
       const cartPrdc = await cartsModel.findById(cid);
