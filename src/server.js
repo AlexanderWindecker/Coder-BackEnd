@@ -11,13 +11,15 @@ import MongoStore from "connect-mongo";
 import passport from "passport";
 import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
-import "./dao/dbConfig.js";
+import "./persistence/mongoDB/dbConfig.js";
 import "./passport/passportStrategies.js";
-import { productManager } from "./routes/products.router.js";
-import { cartManager } from "./routes/carts.router.js";
+import { getProductsService } from "./service/products.services.js";
+import { addToCartService } from "./service/carts.services.js";
+import config from "../env/config.js";
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = config.port;
+const mongo_uri = config.URI;
 const httpServer = app.listen(PORT, () =>  console.log(`Escuchando al puerto ${PORT} `));
 const socketServer = new Server(httpServer);
 
