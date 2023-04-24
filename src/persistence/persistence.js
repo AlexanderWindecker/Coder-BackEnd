@@ -1,7 +1,7 @@
-import CartsMongoDB from "./mongoDB/CartManager.js";
-import ProductsMongoDB from "./mongoDB/ProductManager.js";
-import UsersMongoDB from "./mongoDB/UserManager.js";
-import MessagesMongoDB from "./mongoDB/MessageManager.js";
+import CartsMongoDB from "./DAOs/cartsDAO/CartManager.js";
+import ProductsMongoDB from "./DAOs/productsDAO/ProductManager.js";
+import UsersMongoDB from "./DAOs/usersDAO/UserManager.js";
+import MessagesMongoDB from "./DAOs/messagesDAO/MessageManager.js";
 
 let persistenceCart = new CartsMongoDB();
 let persistenceProduct = new ProductsMongoDB();
@@ -31,6 +31,15 @@ export async function updatePrdctCart(cid, pid, qnt) {
 }
 export async function updateCart(cid, arrayCart) {
     return await persistenceCart.updateCart(cid, arrayCart);
+}
+export async function reduceStock(pid) {
+    return await persistenceCart.reduceStock(pid);
+}
+export async function incStock(pid) {
+    return await persistenceCart.incStock(pid);
+}
+export async function endPurchase(email, total) {
+    return await persistenceCart.endPurchase(email, total)
 }
 
 
@@ -65,6 +74,9 @@ export async function loginUser(user) {
 }
 export async function getUserByEmail(email) {
     return await persistenceUser.getUserByEmail(email);
+}
+export async function getProfileUser(user) {
+    return await persistenceUser.getProfileUser(user);
 }
 
 

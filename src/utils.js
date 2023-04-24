@@ -1,17 +1,12 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
+import {dirname} from 'path'
+import { fileURLToPath } from 'url'
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
-
-
-dotenv.config();
-
 
 export const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const hashPassword = async (password) => {
-  return bcrypt.hash(password, 10);
+    return bcrypt.hash(password, 10)
 };
 export const comparePasswords = async (password, passwordBD) => {
-  return bcrypt.compare(password, passwordBD);
+    return await bcrypt.compare(password, passwordBD)
 };

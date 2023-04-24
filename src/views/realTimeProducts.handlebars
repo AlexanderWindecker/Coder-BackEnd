@@ -1,4 +1,4 @@
-<a href="http://localhost:8080"><button class="btn btn2">Home</button></a>
+<a href="http://localhost:8080/indexAdmin"><button class="btn btn2">Home</button></a>
 <h2>Formulario:</h2>
 <form id="form" action="/api/products" method="POST">
     <input type="text" id="title" placeholder="Título" required><br>
@@ -12,8 +12,9 @@
     <input type="submit" value="Enviar"><br>
 </form>
 
-<h3>Lista de productos con Websocket:</h3>
+<h3>Lista de Productos:</h3>
 <div id="list2"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="realTimePrdts.js"></script>

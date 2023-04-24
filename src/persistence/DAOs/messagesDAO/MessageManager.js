@@ -1,18 +1,18 @@
-import { messageModel } from "./models/messages.model.js";
+import { messagesModel } from "../../mongoDB/models/messages.model.js";
 
 export default class MessageManager {
     async addMessage(obj) {
         try {
-            const newMsg = await messageModel.create(obj);
+            const newMsg = await messagesModel.create(obj);
             return newMsg;
         } catch (error) {
-            console.log("Error al Agregar el Mensaje", error)
+            console.log("Error al agregar el mensaje:", error)
         }
     }
 
     async getMessages() {
         try {
-            const messages = await messageModel.find({});
+            const messages = await messagesModel.find({});
             return messages;
         } catch (error) {
             console.log("No se encuentran mensajes en la Base de Datos", error)

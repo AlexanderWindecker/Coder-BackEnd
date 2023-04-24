@@ -13,30 +13,30 @@ import { Server } from "socket.io";
 import { __dirname } from "./utils.js";
 import "./persistence/mongoDB/dbConfig.js";
 import "./passport/passportStrategies.js";
-import { getProductsService } from "./service/products.services.js";
-import { addToCartService } from "./service/carts.services.js";
+import { addToCartService, endPurchaseService } from "./service/carts.services.js";
 import config from "../env/config.js";
 
 const app = express();
 const PORT = config.port;
-const mongo_uri = config.URI;
-const httpServer = app.listen(PORT, () =>  console.log(`Escuchando al puerto ${PORT} `));
+const MONGO_URL = config.mongoUrl;
+const httpServer = app.listen(PORT, () => console.log(`Escuchando al puerto ${PORT}`));
 const socketServer = new Server(httpServer);
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(__dirname + "/public"));
-app.use(session({
+app.use(express.urlencoded({extended:true}));
+app.use(express.static(__dirname + "/public"));  //PONER LA SESSION ARRIBA DEL ROUTER
+app.use(
+    session({
     store: MongoStore.create({
-      mongoUrl:"mongodb+srv://Alex:Coderhouse@cluster0.itypvvb.mongodb.net/?retryWrites=true&w=majority",
-      mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+        mongoUrl:MONGO_URL,
+        mongoOptions:{useNewUrlParser:true,useUnifiedTopology:true}
     }),
     secret: "sessionKey",
     resave: false,
-    saveUninitialized: true,
-  }));
-app.use(passport.initialize());
-app.use(passport.session());
+    saveUninitialized: false
+}));
+app.use(passport.initialize())
+app.use(passport.session())
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/messages", messagesRouter);
@@ -49,38 +49,31 @@ app.engine("handlebars", handlebars.engine());
 app.set("view engine", "handlebars");
 app.set("views", __dirname + "/views");
 
-const arrayPrdct = [];
 const infoMessage = [];
 
 socketServer.on("connection", async (socket) => {
-  console.log(`Cliente Conectado: ${socket.id}`);
-  const prdcs = await productManager.getProducts();
-  socketServer.emit("list", prdcs);
+    console.log(`Cliente Conectado: ${socket.id}`)
+    
+    socket.on("disconnect", () => {
+        console.log("Cliente Desconectado")
+    })
 
-  socket.on("disconnect", () => {
-    console.log("Cliente Desconectado");
-  });
+    socket.on("userData", data => {
+        console.log(data)
+        socketServer.emit("data", data)
+    })
 
-  socket.on("userData", (data) => {
-    console.log(data);
-    socketServer.emit("data", data);
-  });
+    socket.on("newUser", user => {
+        socket.emit("active", user)
+    })
 
-  socket.on("object", (newPrdc) => {
-    arrayPrdct.push(newPrdc);
-    socketServer.emit("list2", arrayPrdct);
-  });
+    socket.on("message", info => {
+        infoMessage.push(info)
+        socketServer.emit("chat", infoMessage)
+    })
 
-  socket.on("newUser", (user) => {
-    socket.emit("active", user);
-  });
-
-  socket.on("message", (info) => {
-    infoMessage.push(info);
-    socketServer.emit("chat", infoMessage);
-  });
-
-  socket.on("addPrdc", async (cart, button) => {
-    const prdcts = await cartManager.addToCart(cart, button);
-  });
+    socket.on("addPrdc", async (cart, prdt) => {
+        const prdcts = await addToCartService(cart, prdt)
+        const stockCart = await endPurchaseService(cart, prdt)
+    })
 });
