@@ -1,7 +1,7 @@
 import { usersModel } from "../../mongoDB/models/users.model.js";
 import { hashPassword, comparePasswords } from "../../../utils.js"
 import { addCartService } from "../../../service/carts.services.js";
-import config from "../../../../env/config.js";
+import config from "../../../../config.js";
 import UsersDTO from "../../DTOs/users.dto.js";
 import AdminDTO from "../../DTOs/admin.dto.js";
 

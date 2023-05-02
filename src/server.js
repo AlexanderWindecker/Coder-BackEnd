@@ -14,11 +14,12 @@ import { __dirname } from "./utils.js";
 import "./persistence/mongoDB/dbConfig.js";
 import "./passport/passportStrategies.js";
 import { addToCartService, endPurchaseService } from "./service/carts.services.js";
-import config from "../env/config.js";
+import config from "../config.js";
 
 const app = express();
 const PORT = config.port;
 const MONGO_URL = config.mongoUrl;
+console.log(config);
 const httpServer = app.listen(PORT, () => console.log(`Escuchando al puerto ${PORT}`));
 const socketServer = new Server(httpServer);
 
