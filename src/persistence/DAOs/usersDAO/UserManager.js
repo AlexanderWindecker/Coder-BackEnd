@@ -4,6 +4,17 @@ import { addCartService } from "../../../service/carts.services.js";
 import config from "../../../../config.js";
 import UsersDTO from "../../DTOs/users.dto.js";
 import AdminDTO from "../../DTOs/admin.dto.js";
+import nodemailer from 'nodemailer';
+import logger from "../../../winston/winston.js";
+
+const transport = nodemailer.createTransport({
+    service: 'gmail',
+    port: 587,
+    auth: {
+        user: config.googleEmail,
+        pass: config.googlePassword
+    }
+})
 
 export default class UserManager {
     async createUser(user) {
@@ -20,7 +31,7 @@ export default class UserManager {
                 return null;
             }
         } catch (error) {
-            console.log("Error en la creación del usuario", error)
+            logger.error("Error en la creación del usuario", error)
         }
     }
 
@@ -50,7 +61,7 @@ export default class UserManager {
             const users = await usersModel.findOne({ email });
             return users;
         } catch (error) {
-            console.log("Id no encontrado", error)
+            logger.info("Id no encontrado", error)
         }
     }
 
@@ -68,5 +79,19 @@ export default class UserManager {
                 return null;
             }
         }
+    }
+    
+    async getMail(userEmail) {
+        let result = await transport.sendMail({
+            from: "$neakers",
+            to: userEmail,
+            subject: 'Check Login',
+            html: `
+                <div>
+                    <p>¡Te has logeado correctamente en $neakers!</p>
+                </div>
+            `
+        })
+        return result;
     }
 }

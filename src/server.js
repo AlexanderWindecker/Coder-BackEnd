@@ -3,6 +3,7 @@ import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import messagesRouter from "./routes/messages.router.js";
 import usersRouter from "./routes/users.router.js";
+import mockingsRouter from "./routes/mockings.router.js";
 import viewsRouter from "./routes/views.router.js";
 import handlebars from "express-handlebars";
 import session from "express-session";
@@ -19,15 +20,13 @@ import config from "../config.js";
 const app = express();
 const PORT = config.port;
 const MONGO_URL = config.mongoUrl;
-console.log(config);
 const httpServer = app.listen(PORT, () => console.log(`Escuchando al puerto ${PORT}`));
 const socketServer = new Server(httpServer);
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static(__dirname + "/public"));  //PONER LA SESSION ARRIBA DEL ROUTER
-app.use(
-    session({
+app.use(session({
     store: MongoStore.create({
         mongoUrl:MONGO_URL,
         mongoOptions:{useNewUrlParser:true,useUnifiedTopology:true}
@@ -42,6 +41,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/mockings", mockingsRouter);
 app.use("/", viewsRouter);
 
 app.use(cookieParser());
@@ -60,7 +60,6 @@ socketServer.on("connection", async (socket) => {
     })
 
     socket.on("userData", data => {
-        console.log(data)
         socketServer.emit("data", data)
     })
 

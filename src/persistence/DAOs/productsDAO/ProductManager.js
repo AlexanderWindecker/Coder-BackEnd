@@ -1,12 +1,19 @@
 import { productsModel } from "../../mongoDB/models/products.model.js";
+import CustomError from "../../../errors/CustomError.js";
+import logger from "../../../winston/winston.js";
+import { ErrorsName, ErrorsMessage, ErrorsCause } from "../../../errors/errors.enum.js";
 
 export default class ProductManager {
     async addProduct(obj) {
         try {
             const newPrdc = await productsModel.create(obj);
             return newPrdc;
-        } catch (error) {
-            console.log("Error al Agregar el Producto", error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.addProductError,
+                message: ErrorsMessage.addProductError,
+                cause: ErrorsCause.addProductError,
+            })
         }
     }
 
@@ -15,7 +22,7 @@ export default class ProductManager {
             const products = await productsModel.find({});
             return products;
         } catch (error) {
-            console.log("No hay productos en la Base de Datos", error)
+            logger.warning("No hay productos en la Base de Datos,", error)
         }
     }
 
@@ -24,7 +31,7 @@ export default class ProductManager {
             const productId = await productsModel.findById(id);
             return productId;
         } catch (error) {
-            console.log("Id no encontrado", error)
+            logger.error("Id no encontrado,", error)
         }
     }
 
@@ -32,8 +39,12 @@ export default class ProductManager {
         try {
             const prdcToUpdate = await productsModel.findByIdAndUpdate(id, {[field]: value});
             return prdcToUpdate;
-        } catch (error) {
-            console.log("Inserte un ID válido", error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.updateProductError,
+                message: ErrorsMessage.updateProductError,
+                cause: ErrorsCause.updateProductError,
+            })
         }
     }
 
@@ -41,9 +52,22 @@ export default class ProductManager {
         try {
             const prdcToDelete = await productsModel.deleteOne({_id:id});
             return prdcToDelete;
-        } catch (error) {
-            console.log("Producto no encontrado", error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.deleteProductError,
+                message: ErrorsMessage.deleteProductError,
+                cause: ErrorsCause.deleteProductError,
+            })
         }
+    }
+
+    async logsWinston() {
+        logger.fatal("Fatal Log")
+        logger.error("Error Log")
+        logger.warning("Warning Log")
+        logger.info("Info Log")
+        logger.http("Http Log")
+        logger.debug("Debug Log")
     }
 
     async aggregationFunc(ctg, srt) {
@@ -62,7 +86,7 @@ export default class ProductManager {
                 return ctgy;
             }
         } catch (error) {
-            console.log(error)
+            logger.error(error)
         }
     }
 
@@ -82,7 +106,7 @@ export default class ProductManager {
                 return stck;
             }
         } catch (error) {
-            console.log(error)
+            logger.error(error)
         }
     }
 }

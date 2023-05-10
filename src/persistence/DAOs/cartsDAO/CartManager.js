@@ -2,6 +2,8 @@ import { cartsModel } from "../../mongoDB/models/carts.model.js";
 import { productsModel } from "../../mongoDB/models/products.model.js";
 import { ticketsModel } from "../../mongoDB/models/tickets.model.js";
 import randomCode from "../../../public/functions/randomCode.js"
+import CustomError from "../../../errors/CustomError.js";
+import logger from "../../../winston/winston.js";
 
 export default class CartManager {
     async addCart(obj) {
@@ -9,7 +11,7 @@ export default class CartManager {
             const newCart = await cartsModel.create(obj);
             return newCart;
         } catch (error) {
-            console.log("Error al Agregar el Producto", error)
+            logger.error("Error al Agregar el Carrito", error)
         }
     }
 
@@ -18,7 +20,7 @@ export default class CartManager {
             const carts = await cartsModel.find({});
             return carts;
         } catch (error) {
-            console.log("No hay productos en la Base de Datos", error)
+            logger.warning("No hay productos en la Base de Datos", error)
         }
     } 
 
@@ -27,7 +29,7 @@ export default class CartManager {
             const cartId = await cartsModel.find({_id:id});
             return cartId;
         } catch (error) {
-            console.log("Id no encontrado", error)
+            logger.info("Id no encontrado", error)
         }
     } 
 
@@ -43,10 +45,9 @@ export default class CartManager {
                             {_id: cid, "products.product": pid},
                             {$inc: {"products.$.quantity": 1}}
                         )
-                        console.log("Cantidad aumentada")
                         return (updQty);
                     } else {
-                        console.log("Stock Insuficiente")
+                        return("Stock Insuficiente")
                     }
                 } else {
                     const pushPrdc = cartsModel.updateOne(
@@ -59,8 +60,12 @@ export default class CartManager {
                     return pushPrdc;
                 }
             }
-        } catch (error) {
-            console.log("Carrito no encontrado", error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.addToCartError,
+                message: ErrorsMessage.addToCartError,
+                cause: ErrorsCause.addToCartError,
+            })
         }
     }
 
@@ -71,8 +76,12 @@ export default class CartManager {
             cartPrdc.products.splice(prdcIndex,1);
             const newCart = await cartPrdc.save();
             return newCart;
-        } catch (error) {
-            console.log(error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.deletePrdcCartError,
+                message: ErrorsMessage.deletePrdcCartError,
+                cause: ErrorsCause.deletePrdcCartError,
+            })
         }
     }
 
@@ -82,8 +91,12 @@ export default class CartManager {
             cartPrdc.products.splice(0);
             const newCart = await cartPrdc.save();
             return newCart;
-        } catch (error) {
-            console.log(error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.deletePrdcsError,
+                message: ErrorsMessage.deletePrdcsError,
+                cause: ErrorsCause.deletePrdcsError,
+            })
         }
     }
 
@@ -97,8 +110,12 @@ export default class CartManager {
                 )
                 return updQty;
             }
-        } catch (error) {
-            console.log(error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.updatePrdcCartError,
+                message: ErrorsMessage.updatePrdcCartError,
+                cause: ErrorsCause.updatePrdcCartError,
+            })
         }
     }
 
@@ -108,8 +125,12 @@ export default class CartManager {
             cart.products.push(arrayCart);
             const newCart = await cart.save();
             return newCart;
-        } catch (error) {
-            console.log(error)
+        } catch {
+            CustomError.createCustomError({
+                name: ErrorsName.updateCartError,
+                message: ErrorsMessage.updateCartError,
+                cause: ErrorsCause.updateCartError,
+            })
         }
     }
 
@@ -119,10 +140,9 @@ export default class CartManager {
                 {_id: pid},
                 {$inc: {"stock": -1}}
             )
-            console.log("Stock disminuído")
             return updPrd;
         } catch (error) {
-            console.log(error)
+            logger.error(error)
         }
     }
 
@@ -134,7 +154,7 @@ export default class CartManager {
             )
             return updPrd;
         } catch (error) {
-            console.log(error)
+            logger.error(error)
         }
     }
 
@@ -149,7 +169,7 @@ export default class CartManager {
             const ticket = await ticketsModel.create(obj)
             return ticket;
         } catch (error) {
-            console.log(error)
+            logger.error(error)
         }
     }
 }

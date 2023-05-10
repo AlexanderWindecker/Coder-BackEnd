@@ -2,11 +2,13 @@ import CartsMongoDB from "./DAOs/cartsDAO/CartManager.js";
 import ProductsMongoDB from "./DAOs/productsDAO/ProductManager.js";
 import UsersMongoDB from "./DAOs/usersDAO/UserManager.js";
 import MessagesMongoDB from "./DAOs/messagesDAO/MessageManager.js";
+import MockingMongoDB from "./DAOs/mockingsDAO/MockingManager.js";
 
 let persistenceCart = new CartsMongoDB();
 let persistenceProduct = new ProductsMongoDB();
 let persistenceUser = new UsersMongoDB();
 let persistenceMessage = new MessagesMongoDB();
+let persistenceMocking = new MockingMongoDB();
 
 export async function addCart(obj) {
     return await persistenceCart.addCart(obj);
@@ -64,6 +66,9 @@ export async function aggregationFunc(ctg, srt) {
 export async function aggregationFunc2(ctg, srt) {
     return await persistenceProduct.aggregationFunc2(ctg, srt);
 }
+export async function logsWinston() {
+    return await persistenceProduct.logsWinston();
+}
 
 
 export async function createUser(user) {
@@ -78,6 +83,9 @@ export async function getUserByEmail(email) {
 export async function getProfileUser(user) {
     return await persistenceUser.getProfileUser(user);
 }
+export async function getMail(userEmail) {
+    return await persistenceUser.getMail(userEmail);
+}
 
 
 export async function addMessage(obj) {
@@ -85,4 +93,12 @@ export async function addMessage(obj) {
 }
 export async function getMessages() {
     return await persistenceMessage.getMessages();
+}
+
+
+export async function getMockingProducts() {
+    return await persistenceMocking.getMockingProducts();
+}
+export async function generateMockingProducts() {
+    return await persistenceMocking.generateMockingProducts();
 }
